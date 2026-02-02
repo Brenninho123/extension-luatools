@@ -24,11 +24,37 @@ class LuaManager
 	{
 		state = LuaL.newstate();
 		LuaL.openlibs(state);
+
+		applySandbox();
 	}
 
 	function destroyState():Void
 	{
 		Lua.close(state);
+	}
+
+	/* ========================= */
+	/* SANDBOX                   */
+	/* ========================= */
+
+	function applySandbox():Void
+	{
+		// Remove libs perigosas
+		disableGlobal("os");
+		disableGlobal("io");
+		disableGlobal("debug");
+		disableGlobal("package");
+		disableGlobal("require");
+		disableGlobal("dofile");
+		disableGlobal("loadfile");
+
+		trace("Lua sandbox aplicado");
+	}
+
+	function disableGlobal(name:String):Void
+	{
+		Lua.pushnil(state);
+		Lua.setglobal(state, name);
 	}
 
 	/* ========================= */
@@ -43,14 +69,12 @@ class LuaManager
 
 	public function reload():Void
 	{
-		trace("♻ Hot Reload Lua...");
+		trace("♻ Hot Reload Lua (sandboxed)");
 
 		destroyState();
 		createState();
 
 		load();
-
-		// Chama callback de reload se existir
 		call("onReload", []);
 	}
 
