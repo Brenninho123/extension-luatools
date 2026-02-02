@@ -3,6 +3,7 @@ package;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import lua.LuaManager;
+import lua.LuaAPI;
 
 class Main extends Sprite
 {
@@ -11,29 +12,35 @@ class Main extends Sprite
 	public function new()
 	{
 		super();
-
-		if (stage != null)
-			init();
-		else
-			addEventListener(Event.ADDED_TO_STAGE, init);
+		addEventListener(Event.ADDED_TO_STAGE, init);
 	}
 
-	function init(?e:Event):Void
+	function init(e:Event):Void
 	{
 		removeEventListener(Event.ADDED_TO_STAGE, init);
 
 		lua = new LuaManager();
 
-		// Exemplo: variável do Haxe indo pro Lua
-		lua.setGlobal("appName", "LuaTools");
+		// Expor APIs
+		lua.exposeFunction("printHx", LuaAPI.print);
+		lua.exposeFunction("sumHx", LuaAPI.sum);
+		lua.exposeFunction("getAppName", LuaAPI.getAppName);
 
-		// Executa código direto
+		// Executar Lua
 		lua.runString('
-			print("Hello from Lua!")
-			print("App:", appName)
+			printHx("Lua conectado!")
+			printHx("App: " .. getAppName())
+			printHx("Soma: " .. sumHx(5, 3))
 		');
 
-		// Executa arquivo
-		lua.runFile("assets/scripts/test.lua");
+		// Chamar função Lua
+		lua.runString('
+			function multiply(a, b)
+				return a * b
+			end
+		');
+
+		var result = lua.call("multiply", [4, 6]);
+		trace("Resultado Lua -> Haxe: " + result);
 	}
 }
