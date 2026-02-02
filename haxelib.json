@@ -2,11 +2,20 @@
   "name": "extension-luatools",
   "url": "https://github.com/Brenninho123/extension-luatools",
   "license": "Apache",
-  "tags": ["lua", "openfl", "scripting", "sandbox"],
-  "description": "Lua integration toolkit for Haxe with sandbox, hot reload and engine API",
+  "tags": [
+    "lua",
+    "scripting",
+    "openfl",
+    "engine",
+    "sandbox",
+    "hot-reload"
+  ],
+  "description": "Lua integration toolkit for Haxe with sandbox, hot reload and engine-style API",
   "version": "1.0.0",
   "classPath": "source",
-  "contributors": ["Brenninho123"],
+  "contributors": [
+    "Brenninho123"
+  ],
   "dependencies": {
     "llua": ""
   }
