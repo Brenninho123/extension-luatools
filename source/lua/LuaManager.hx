@@ -8,63 +8,68 @@ import llua.Convert;
 class LuaManager
 {
 	public var state:State;
+	var scriptPath:String;
 
-	public function new()
+	public function new(path:String)
+	{
+		scriptPath = path;
+		createState();
+	}
+
+	/* ========================= */
+	/* STATE                     */
+	/* ========================= */
+
+	function createState():Void
 	{
 		state = LuaL.newstate();
 		LuaL.openlibs(state);
+	}
 
-		trace("Lua iniciado");
+	function destroyState():Void
+	{
+		Lua.close(state);
 	}
 
 	/* ========================= */
-	/* EXECUÇÃO                  */
+	/* LOAD / RELOAD             */
 	/* ========================= */
 
-	public function runString(code:String):Void
+	public function load():Void
 	{
-		if (LuaL.dostring(state, code) != 0)
+		if (LuaL.dofile(state, scriptPath) != 0)
 			error();
 	}
 
-	public function runFile(path:String):Void
+	public function reload():Void
 	{
-		if (LuaL.dofile(state, path) != 0)
-			error();
-	}
+		trace("♻ Hot Reload Lua...");
 
-	private function error():Void
-	{
-		trace("Lua Error: " + Lua.tostring(state, -1));
-		Lua.pop(state, 1);
-	}
+		destroyState();
+		createState();
 
-	/* ========================= */
-	/* VARIÁVEIS                 */
-	/* ========================= */
+		load();
 
-	public function setGlobal(name:String, value:Dynamic):Void
-	{
-		Convert.toLua(state, value);
-		Lua.setglobal(state, name);
-	}
-
-	public function getGlobal(name:String):Dynamic
-	{
-		Lua.getglobal(state, name);
-		return Convert.fromLua(state, -1);
+		// Chama callback de reload se existir
+		call("onReload", []);
 	}
 
 	/* ========================= */
-	/* FUNÇÕES LUA               */
+	/* CALLS                     */
 	/* ========================= */
 
 	public function call(func:String, args:Array<Dynamic>):Dynamic
 	{
 		Lua.getglobal(state, func);
 
-		for (arg in args)
-			Convert.toLua(state, arg);
+		if (!Lua.isfunction(state, -1))
+		{
+			Lua.pop(state, 1);
+			return null;
+		}
+
+		for (a in args)
+			Convert.toLua(state, a);
 
 		if (Lua.pcall(state, args.length, 1, 0) != 0)
 		{
@@ -76,12 +81,22 @@ class LuaManager
 	}
 
 	/* ========================= */
-	/* EXPOR API HAXE -> LUA     */
+	/* API                       */
 	/* ========================= */
 
 	public function exposeFunction(name:String, fn:State->Int):Void
 	{
 		Lua.pushcfunction(state, fn);
 		Lua.setglobal(state, name);
+	}
+
+	/* ========================= */
+	/* ERROR                     */
+	/* ========================= */
+
+	function error():Void
+	{
+		trace("Lua Error: " + Lua.tostring(state, -1));
+		Lua.pop(state, 1);
 	}
 }
