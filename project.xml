@@ -40,12 +40,14 @@
 	<!-- ==================== -->
 	<haxelib name="openfl" />
 	<haxelib name="lime" />
+ <haxelib name="llua" />
 
 	<!-- ==================== -->
 	<!-- Defines úteis -->
 	<!-- ==================== -->
 	<define name="lua_tools" />
 	<define name="tools" />
+ <define name="lua_debug" />
 
 	<!-- ==================== -->
 	<!-- Build flags -->
