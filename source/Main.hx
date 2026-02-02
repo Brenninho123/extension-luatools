@@ -2,45 +2,95 @@ package;
 
 import openfl.display.Sprite;
 import openfl.events.Event;
+import openfl.Lib;
+
 import lua.LuaManager;
 import lua.LuaAPI;
 
 class Main extends Sprite
 {
+	// Core
 	var lua:LuaManager;
+
+	// Timing
+	var lastTime:Float = 0;
 
 	public function new()
 	{
 		super();
-		addEventListener(Event.ADDED_TO_STAGE, init);
+
+		if (stage != null)
+			init();
+		else
+			addEventListener(Event.ADDED_TO_STAGE, init);
 	}
 
-	function init(e:Event):Void
-	{
-		removeEventListener(Event.ADDED_TO_STAGE, init);
+	/* ========================= */
+	/* INIT                      */
+	/* ========================= */
 
+	function init(?e:Event):Void
+	{
+		if (e != null)
+			removeEventListener(Event.ADDED_TO_STAGE, init);
+
+		trace("Inicializando LuaTools...");
+
+		initLua();
+		loadScripts();
+
+		lastTime = Lib.getTimer();
+		addEventListener(Event.ENTER_FRAME, update);
+
+		trace("LuaTools iniciado com sucesso!");
+	}
+
+	/* ========================= */
+	/* LUA                       */
+	/* ========================= */
+
+	function initLua():Void
+	{
 		lua = new LuaManager();
 
-		// Expor APIs
+		// Expor APIs Haxe -> Lua
 		lua.exposeFunction("printHx", LuaAPI.print);
 		lua.exposeFunction("sumHx", LuaAPI.sum);
 		lua.exposeFunction("getAppName", LuaAPI.getAppName);
+	}
 
-		// Executar Lua
-		lua.runString('
-			printHx("Lua conectado!")
-			printHx("App: " .. getAppName())
-			printHx("Soma: " .. sumHx(5, 3))
-		');
+	function loadScripts():Void
+	{
+		// Script principal
+		lua.runFile("assets/scripts/main.lua");
 
-		// Chamar função Lua
-		lua.runString('
-			function multiply(a, b)
-				return a * b
-			end
-		');
+		// Chama init do Lua se existir
+		lua.call("onInit", []);
+	}
 
-		var result = lua.call("multiply", [4, 6]);
-		trace("Resultado Lua -> Haxe: " + result);
+	/* ========================= */
+	/* UPDATE                    */
+	/* ========================= */
+
+	function update(e:Event):Void
+	{
+		var currentTime = Lib.getTimer();
+		var dt:Float = (currentTime - lastTime) / 1000;
+		lastTime = currentTime;
+
+		// Chama update do Lua
+		lua.call("onUpdate", [dt]);
+	}
+
+	/* ========================= */
+	/* SHUTDOWN                  */
+	/* ========================= */
+
+	public function shutdown():Void
+	{
+		trace("Finalizando LuaTools...");
+
+		removeEventListener(Event.ENTER_FRAME, update);
+		lua.call("onShutdown", []);
 	}
 }
