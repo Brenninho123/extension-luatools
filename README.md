@@ -1,23 +1,23 @@
 # extension-luatools
 
-A powerful Lua integration toolkit for Haxe / OpenFL projects, featuring **sandboxed Lua**, **hot reload**, and an **engine-style API**.
+A modern **Lua integration toolkit for Haxe**, focused on **sandboxed execution**, **hot reload**, and a clean **engine-style API**.
 
-Designed for tools, engines, mods, and scripting systems.
+Built for game engines, tools, modding systems, and extensible applications.
 
 ---
 
 ## ✨ Features
 
-- 🔐 **Lua Sandbox**
-  - Blocks dangerous libraries (`os`, `io`, `debug`, `package`)
-  - Safe execution for mods and plugins
+- 🔐 **Secure Lua Sandbox**
+  - Dangerous libraries are disabled (`os`, `io`, `debug`, `package`)
+  - Safe to run user scripts and mods
 
-- ⚡ **Hot Reload**
-  - Reload Lua scripts instantly when files change
+- ⚡ **Lua Hot Reload**
+  - Reload Lua scripts at runtime
   - No application restart required
 
 - 🧠 **Engine-style API**
-  - Clean `engine.*` namespace
+  - APIs exposed under a single `engine` namespace
   - No global pollution
 
 - 🔁 **Lifecycle Callbacks**
@@ -26,15 +26,15 @@ Designed for tools, engines, mods, and scripting systems.
   - `onReload()`
   - `onShutdown()`
 
-- 🔌 **Haxe ⇄ Lua Communication**
+- 🔌 **Haxe ⇄ Lua Bridge**
   - Call Lua functions from Haxe
-  - Expose Haxe APIs to Lua safely
+  - Expose Haxe functions and data to Lua safely
 
 ---
 
 ## 📦 Installation
 
-Once published on Haxelib:
+### From Haxelib
 
 ```bash
 haxelib install extension-luatools
