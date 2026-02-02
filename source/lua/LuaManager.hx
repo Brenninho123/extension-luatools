@@ -1,9 +1,9 @@
 package lua;
 
 import llua.Lua;
+import llua.LuaL;
 import llua.State;
 import llua.Convert;
-import sys.io.File;
 
 class LuaManager
 {
@@ -14,44 +14,74 @@ class LuaManager
 		state = LuaL.newstate();
 		LuaL.openlibs(state);
 
-		trace("Lua State iniciado");
+		trace("Lua iniciado");
 	}
 
-	/** Executa código Lua em string */
+	/* ========================= */
+	/* EXECUÇÃO                  */
+	/* ========================= */
+
 	public function runString(code:String):Void
 	{
-		var result = LuaL.dostring(state, code);
-
-		if (result != 0)
-			trace("Erro Lua: " + Lua.tostring(state, -1));
+		if (LuaL.dostring(state, code) != 0)
+			error();
 	}
 
-	/** Executa arquivo Lua */
 	public function runFile(path:String):Void
 	{
-		if (!sys.FileSystem.exists(path))
-		{
-			trace("Arquivo Lua não encontrado: " + path);
-			return;
-		}
-
-		var result = LuaL.dofile(state, path);
-
-		if (result != 0)
-			trace("Erro Lua: " + Lua.tostring(state, -1));
+		if (LuaL.dofile(state, path) != 0)
+			error();
 	}
 
-	/** Envia valor do Haxe para Lua */
+	private function error():Void
+	{
+		trace("Lua Error: " + Lua.tostring(state, -1));
+		Lua.pop(state, 1);
+	}
+
+	/* ========================= */
+	/* VARIÁVEIS                 */
+	/* ========================= */
+
 	public function setGlobal(name:String, value:Dynamic):Void
 	{
 		Convert.toLua(state, value);
 		Lua.setglobal(state, name);
 	}
 
-	/** Pega valor global do Lua */
 	public function getGlobal(name:String):Dynamic
 	{
 		Lua.getglobal(state, name);
 		return Convert.fromLua(state, -1);
+	}
+
+	/* ========================= */
+	/* FUNÇÕES LUA               */
+	/* ========================= */
+
+	public function call(func:String, args:Array<Dynamic>):Dynamic
+	{
+		Lua.getglobal(state, func);
+
+		for (arg in args)
+			Convert.toLua(state, arg);
+
+		if (Lua.pcall(state, args.length, 1, 0) != 0)
+		{
+			error();
+			return null;
+		}
+
+		return Convert.fromLua(state, -1);
+	}
+
+	/* ========================= */
+	/* EXPOR API HAXE -> LUA     */
+	/* ========================= */
+
+	public function exposeFunction(name:String, fn:State->Int):Void
+	{
+		Lua.pushcfunction(state, fn);
+		Lua.setglobal(state, name);
 	}
 }
