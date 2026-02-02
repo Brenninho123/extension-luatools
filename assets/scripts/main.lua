@@ -1,31 +1,60 @@
 -- =========================
--- LuaTools - Script Base
+-- LuaTools - Main Script
+-- Hot Reload Ready
 -- =========================
 
-printHx("Iniciando script Lua...")
-printHx("App: " .. getAppName())
+-- estado persistente (recriado a cada reload,
+-- mas você pode salvar/recuperar se quiser)
+LuaTools = LuaTools or {}
+
+LuaTools.version = "1.1.0"
+LuaTools.author  = "Brenninho123"
+LuaTools.counter = LuaTools.counter or 0
 
 -- =========================
--- Variáveis
--- =========================
-
-version = "1.0.0"
-author = "Brenninho123"
-
--- =========================
--- Funções Lua (Haxe chama)
+-- INIT
 -- =========================
 
 function onInit()
-	printHx("onInit() chamado pelo Haxe")
+	printHx("Lua iniciado")
+	printHx("App: " .. getAppName())
+	printHx("Versão LuaTools: " .. LuaTools.version)
 end
 
+-- =========================
+-- UPDATE
+-- =========================
+
 function onUpdate(dt)
-	-- exemplo simples
-	if dt then
-		printHx("Update dt: " .. dt)
+	LuaTools.counter = LuaTools.counter + dt
+
+	-- exemplo: log a cada 2 segundos
+	if LuaTools.counter >= 2 then
+		printHx("Update rodando... dt acumulado = " .. LuaTools.counter)
+		LuaTools.counter = 0
 	end
 end
+
+-- =========================
+-- HOT RELOAD
+-- =========================
+
+function onReload()
+	printHx("♻ Hot Reload detectado!")
+	printHx("Script Lua recarregado com sucesso")
+end
+
+-- =========================
+-- SHUTDOWN (opcional)
+-- =========================
+
+function onShutdown()
+	printHx("Lua finalizado")
+end
+
+-- =========================
+-- FUNÇÕES CHAMÁVEIS PELO HAXE
+-- =========================
 
 function add(a, b)
 	return sumHx(a, b)
@@ -35,24 +64,16 @@ function multiply(a, b)
 	return a * b
 end
 
--- =========================
--- Tabela estilo API
--- =========================
-
-LuaTools = {
-	name = getAppName(),
-	version = version,
-
-	info = function()
-		printHx("LuaTools v" .. version .. " por " .. author)
-	end
-}
+function getInfo()
+	return {
+		name = getAppName(),
+		version = LuaTools.version,
+		author = LuaTools.author
+	}
+end
 
 -- =========================
--- Execução inicial
+-- EXECUÇÃO INICIAL
 -- =========================
 
-LuaTools.info()
-printHx("Soma (Lua -> Haxe): " .. add(10, 5))
-printHx("Multiplicação (Lua puro): " .. multiply(4, 6))
-printHx("Script Lua carregado com sucesso!")
+printHx("main.lua carregado com sucesso!")
