@@ -4,93 +4,73 @@ import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.Lib;
 
+import sys.FileSystem;
+import sys.io.File;
+
 import lua.LuaManager;
 import lua.LuaAPI;
 
 class Main extends Sprite
 {
-	// Core
 	var lua:LuaManager;
 
-	// Timing
+	var scriptPath = "assets/scripts/main.lua";
+	var lastModified:Float = 0;
+
 	var lastTime:Float = 0;
 
 	public function new()
 	{
 		super();
-
-		if (stage != null)
-			init();
-		else
-			addEventListener(Event.ADDED_TO_STAGE, init);
+		addEventListener(Event.ADDED_TO_STAGE, init);
 	}
 
-	/* ========================= */
-	/* INIT                      */
-	/* ========================= */
-
-	function init(?e:Event):Void
+	function init(e:Event):Void
 	{
-		if (e != null)
-			removeEventListener(Event.ADDED_TO_STAGE, init);
-
-		trace("Inicializando LuaTools...");
+		removeEventListener(Event.ADDED_TO_STAGE, init);
 
 		initLua();
-		loadScripts();
+
+		lastModified = FileSystem.stat(scriptPath).mtime.getTime();
 
 		lastTime = Lib.getTimer();
 		addEventListener(Event.ENTER_FRAME, update);
-
-		trace("LuaTools iniciado com sucesso!");
 	}
-
-	/* ========================= */
-	/* LUA                       */
-	/* ========================= */
 
 	function initLua():Void
 	{
-		lua = new LuaManager();
+		lua = new LuaManager(scriptPath);
 
-		// Expor APIs Haxe -> Lua
+		// Expor APIs
 		lua.exposeFunction("printHx", LuaAPI.print);
 		lua.exposeFunction("sumHx", LuaAPI.sum);
 		lua.exposeFunction("getAppName", LuaAPI.getAppName);
-	}
 
-	function loadScripts():Void
-	{
-		// Script principal
-		lua.runFile("assets/scripts/main.lua");
-
-		// Chama init do Lua se existir
+		lua.load();
 		lua.call("onInit", []);
 	}
 
-	/* ========================= */
-	/* UPDATE                    */
-	/* ========================= */
-
 	function update(e:Event):Void
 	{
-		var currentTime = Lib.getTimer();
-		var dt:Float = (currentTime - lastTime) / 1000;
-		lastTime = currentTime;
+		checkHotReload();
 
-		// Chama update do Lua
+		var now = Lib.getTimer();
+		var dt = (now - lastTime) / 1000;
+		lastTime = now;
+
 		lua.call("onUpdate", [dt]);
 	}
 
-	/* ========================= */
-	/* SHUTDOWN                  */
-	/* ========================= */
-
-	public function shutdown():Void
+	function checkHotReload():Void
 	{
-		trace("Finalizando LuaTools...");
+		var current = FileSystem.stat(scriptPath).mtime.getTime();
 
-		removeEventListener(Event.ENTER_FRAME, update);
-		lua.call("onShutdown", []);
+		if (current != lastModified)
+		{
+			lastModified = current;
+
+			lua.reload();
+			lua.call("onInit", []);
+		}
 	}
 }
