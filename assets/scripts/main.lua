@@ -1,60 +1,51 @@
--- =========================
--- LuaTools - Main Script
--- Hot Reload Ready
--- =========================
-
--- estado persistente (recriado a cada reload,
--- mas você pode salvar/recuperar se quiser)
 LuaTools = LuaTools or {}
 
-LuaTools.version = "1.1.0"
-LuaTools.author  = "Brenninho123"
-LuaTools.counter = LuaTools.counter or 0
+LuaTools.info = {
+	name    = getAppName(),
+	version = "1.2.0",
+	author  = "Brenninho123"
+}
 
--- =========================
--- INIT
--- =========================
+LuaTools.time = LuaTools.time or 0
+LuaTools.ticks = LuaTools.ticks or 0
+
 
 function onInit()
-	printHx("Lua iniciado")
-	printHx("App: " .. getAppName())
-	printHx("Versão LuaTools: " .. LuaTools.version)
+	engine_log("Lua iniciado")
+	engine_log("App: " .. LuaTools.info.name)
+	engine_log("Versão: " .. LuaTools.info.version)
 end
 
--- =========================
--- UPDATE
--- =========================
-
 function onUpdate(dt)
-	LuaTools.counter = LuaTools.counter + dt
+	LuaTools.time = LuaTools.time + dt
+	LuaTools.ticks = LuaTools.ticks + 1
 
-	-- exemplo: log a cada 2 segundos
-	if LuaTools.counter >= 2 then
-		printHx("Update rodando... dt acumulado = " .. LuaTools.counter)
-		LuaTools.counter = 0
+	-- log a cada 1 segundo
+	if LuaTools.time >= 1 then
+		engine_log("Tick: " .. LuaTools.ticks)
+		LuaTools.time = 0
 	end
 end
 
--- =========================
+-- =================================
 -- HOT RELOAD
--- =========================
+-- =================================
 
 function onReload()
-	printHx("♻ Hot Reload detectado!")
-	printHx("Script Lua recarregado com sucesso")
+	engine_log("🔥 Script Lua recarregado (hot reload)")
 end
 
--- =========================
--- SHUTDOWN (opcional)
--- =========================
+-- =================================
+-- SHUTDOWN
+-- =================================
 
 function onShutdown()
-	printHx("Lua finalizado")
+	engine_log("Lua finalizado com segurança")
 end
 
--- =========================
--- FUNÇÕES CHAMÁVEIS PELO HAXE
--- =========================
+-- =================================
+-- FUNÇÕES PARA HAXE
+-- =================================
 
 function add(a, b)
 	return sumHx(a, b)
@@ -65,15 +56,11 @@ function multiply(a, b)
 end
 
 function getInfo()
-	return {
-		name = getAppName(),
-		version = LuaTools.version,
-		author = LuaTools.author
-	}
+	return LuaTools.info
 end
 
--- =========================
--- EXECUÇÃO INICIAL
--- =========================
+-- =================================
+-- BOOT
+-- =================================
 
 printHx("main.lua carregado com sucesso!")
