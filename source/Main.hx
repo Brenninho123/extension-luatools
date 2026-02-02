@@ -1,46 +1,39 @@
 package;
 
 import openfl.display.Sprite;
-import openfl.Lib;
 import openfl.events.Event;
+import lua.LuaManager;
 
-/**
- * LuaTools - Entry Point
- * Projeto base para ferramentas/utilitários em Lua
- * Autor: Brenninho123
- */
 class Main extends Sprite
 {
+	var lua:LuaManager;
+
 	public function new()
 	{
 		super();
 
-		// Espera o stage estar pronto
 		if (stage != null)
 			init();
 		else
 			addEventListener(Event.ADDED_TO_STAGE, init);
 	}
 
-	private function init(?e:Event):Void
+	function init(?e:Event):Void
 	{
-		if (e != null)
-			removeEventListener(Event.ADDED_TO_STAGE, init);
+		removeEventListener(Event.ADDED_TO_STAGE, init);
 
-		trace("LuaTools iniciado com sucesso!");
+		lua = new LuaManager();
 
-		// Exemplo de chamada inicial
-		start();
-	}
+		// Exemplo: variável do Haxe indo pro Lua
+		lua.setGlobal("appName", "LuaTools");
 
-	private function start():Void
-	{
-		// Aqui você pode inicializar:
-		// - loaders
-		// - ferramentas Lua
-		// - sistema de comandos
-		// - debug tools
+		// Executa código direto
+		lua.runString('
+			print("Hello from Lua!")
+			print("App:", appName)
+		');
 
-		trace("Pronto para carregar ferramentas Lua.");
+		// Executa arquivo
+		lua.runFile("assets/scripts/test.lua");
 	}
 }
