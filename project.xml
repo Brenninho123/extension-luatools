@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+
+	<!-- ==================== -->
+	<!-- Informações básicas -->
+	<!-- ==================== -->
+	<meta
+		title="LuaTools"
+		description="Lua Tools - Utility extension and helpers for Lua scripting"
+		package="extension.luatools"
+		version="1.0.0"
+		company="Brenninho123"
+	/>
+
+	<!-- ==================== -->
+	<!-- Configurações gerais -->
+	<!-- ==================== -->
+	<app main="Main" file="LuaTools" path="export" />
+
+	<window
+		width="1280"
+		height="720"
+		fps="60"
+		background="#000000"
+		resizable="true"
+	/>
+
+	<!-- ==================== -->
+	<!-- Source -->
+	<!-- ==================== -->
+	<source path="source" />
+
+	<!-- ==================== -->
+	<!-- Assets (opcional) -->
+	<!-- ==================== -->
+	<assets path="assets" />
+
+	<!-- ==================== -->
+	<!-- Libraries -->
+	<!-- ==================== -->
+	<haxelib name="openfl" />
+	<haxelib name="lime" />
+
+	<!-- ==================== -->
+	<!-- Defines úteis -->
+	<!-- ==================== -->
+	<define name="lua_tools" />
+	<define name="tools" />
+
+	<!-- ==================== -->
+	<!-- Build flags -->
+	<!-- ==================== -->
+	<haxeflag name="-dce" value="full" />
+
+</project>
