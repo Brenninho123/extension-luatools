@@ -4,110 +4,62 @@ import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.Lib;
 
-import sys.FileSystem;
+import lua.sandbox.LuaSandboxManager;
 
-import lua.LuaManager;
-import lua.LuaAPI;
-import lua.EngineAPI;
+class Main extends Sprite {
 
-class Main extends Sprite
-{
-	// Lua
-	var lua:LuaManager;
-
-	// Script
-	final scriptPath:String = "assets/scripts/main.lua";
-	var lastModified:Float = 0;
-
-	// Timing
 	var lastTime:Float = 0;
 
-	public function new()
-	{
+	public function new() {
 		super();
-		addEventListener(Event.ADDED_TO_STAGE, init);
+
+		// Wait until added to stage
+		addEventListener(Event.ADDED_TO_STAGE, onAdded);
 	}
 
-	/* ========================= */
-	/* INIT                      */
-	/* ========================= */
+	function onAdded(e:Event):Void {
+		removeEventListener(Event.ADDED_TO_STAGE, onAdded);
 
-	function init(e:Event):Void
-	{
-		removeEventListener(Event.ADDED_TO_STAGE, init);
+		trace("Main initialized");
 
-		trace("🚀 LuaTools iniciando...");
-
+		// Create Lua sandboxes
 		initLua();
-		loadScript();
 
-		lastModified = FileSystem.stat(scriptPath).mtime.getTime();
+		// Start update loop
 		lastTime = Lib.getTimer();
-
 		addEventListener(Event.ENTER_FRAME, update);
 	}
 
-	function initLua():Void
-	{
-		lua = new LuaManager(scriptPath);
+	function initLua():Void {
+		// Core script
+		LuaSandboxManager.create(
+			"core",
+			"assets/scripts/main.lua"
+		);
 
-		// APIs básicas
-		lua.exposeFunction("printHx", LuaAPI.print);
-		lua.exposeFunction("sumHx", LuaAPI.sum);
-		lua.exposeFunction("getAppName", LuaAPI.getAppName);
-
-		// API engine.*
-		lua.exposeFunction("engine_log", EngineAPI.log);
-		lua.exposeFunction("engine_time", EngineAPI.getTime);
+		// Example mod sandbox
+		// LuaSandboxManager.create(
+		//     "mod_example",
+		//     "mods/example/main.lua"
+		// );
 	}
 
-	function loadScript():Void
-	{
-		lua.load();
-		lua.call("onInit", []);
-	}
-
-	/* ========================= */
-	/* UPDATE                    */
-	/* ========================= */
-
-	function update(e:Event):Void
-	{
-		checkHotReload();
-
+	function update(e:Event):Void {
 		var now = Lib.getTimer();
 		var dt:Float = (now - lastTime) / 1000;
 		lastTime = now;
 
-		lua.call("onUpdate", [dt]);
+		// Update all Lua sandboxes
+		LuaSandboxManager.update(dt);
 	}
 
-	/* ========================= */
-	/* HOT RELOAD                */
-	/* ========================= */
-
-	function checkHotReload():Void
-	{
-		var current = FileSystem.stat(scriptPath).mtime.getTime();
-
-		if (current != lastModified)
-		{
-			lastModified = current;
-
-			trace("♻ Hot Reload detectado");
-			lua.reload();
-			lua.call("onInit", []);
-		}
+	public function reloadLua(id:String):Void {
+		trace("Reloading Lua sandbox: " + id);
+		LuaSandboxManager.reload(id);
 	}
 
-	/* ========================= */
-	/* SHUTDOWN                  */
-	/* ========================= */
-
-	public function shutdown():Void
-	{
-		trace("🛑 Encerrando LuaTools...");
-		removeEventListener(Event.ENTER_FRAME, update);
-		lua.call("onShutdown", []);
+	public function reloadAllLua():Void {
+		trace("Reloading all Lua sandboxes");
+		LuaSandboxManager.reloadAll();
 	}
 }
